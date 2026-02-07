@@ -1,91 +1,141 @@
 # One for All
 
+<p align="center">
+  <img src="public/all-might.png" alt="One for All" width="200" />
+</p>
+
 <h4 align="center">
-  One for All – Free node-based AI workflow builder
+  AI-Powered Business Workflow Generator
 </h4>
 
-<div align="center">
-  <h2>
-    Free node-based AI workflow builder. </br>
-    Reusable and efficient for productivity. </br>
-  <br />
-  </h2>
-</div>
-
-<br />
 <p align="center">
-  <a href="https://github.com/yourusername/one-for-all/blob/master/LICENSE">
-    <img alt="One for All is released under the MIT license." src="https://img.shields.io/badge/license-MIT-blue.svg"  />
+  Turn natural language into production-ready workflows. Describe what you need in plain English—get executable workflows with email, Slack, approvals, and more. No code required.
+</p>
+
+<p align="center">
+  <a href="https://github.com/hatif03/one-for-all/blob/main/LICENSE">
+    <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue.svg" />
   </a>
 </p>
 
+---
+
 ## What Problem It Solves
 
-One for All is for anyone who is tired of repeating themselves to AI.
+Business teams know what they want to automate—onboarding, approvals, notifications—but building workflows usually means waiting on developers. **One for All** bridges that gap: describe your process in plain English, and the AI turns it into a working workflow you can run, edit in natural language, and export to tools like n8n.
 
-If you find yourself frequently typing the same instructions into a chat window — like "proofread this," "summarize that," or "translate this" — you're wasting valuable time. One for All eliminates this repetition. It allows you to create reusable workflows for your common AI tasks, so you can stop rewriting prompts and focus on the actual work.
+You can still build from scratch with a full node-based canvas, chain AI steps for content and analysis, and reuse everything. One app for both conversational workflow generation and hands-on automation design.
+
+---
 
 ## Features
 
-One for All offers:
+### Create with AI
 
-- 💯&nbsp;Free & open-source.
-- 🎨&nbsp;Infinite canvas, node-based workflow builder.
-- 🔄&nbsp;Reusable AI templates and workflows.
-- 🔗&nbsp;Chain multiple AI operations seamlessly.
-- 🔑&nbsp;Bring your own API keys - works with any AI model.
-- 💻&nbsp;Runs entirely in your browser - your data stays private.
-- 🌓&nbsp;Dark mode support.
-- 📱&nbsp;Responsive design works on all devices.
-- 💾&nbsp;Local storage - your workflows are saved automatically.
-- 🎯&nbsp;Drag-and-drop node creation and connection.
-- ✍️&nbsp;Rich text editing with markdown support.
-- 📊&nbsp;Visual flow connections between nodes.
-- 🏷️&nbsp;Annotation nodes for documentation.
+- **Natural language to workflow** — Describe your process (e.g. “When a new employee is hired, send a welcome email, add them to Slack, and schedule training”). The AI clarifies if needed, breaks it into steps, and generates a workflow on the canvas.
+- **Intent-based API discovery** — Steps are mapped to actions (email, Slack, HTTP, approvals, delays) from a catalog so the right “nodes” are chosen from your description.
+- **Human in the loop** — Review the generated workflow, **edit in natural language** (“Add a delay before the reminder”), and **Approve & deploy** when you’re ready. No automatic deployment without your OK.
+- **Self-debugging** — If a node fails when you run the workflow, use **Debug with AI** to send the error and workflow to the model; it suggests a fix and you can re-run.
+- **Learning from examples** — Save successful workflows as templates so future generations follow similar patterns (few-shot in the AI).
+
+### Build from Scratch
+
+- **Infinite canvas** — Node-based workflow editor with pan, zoom, and selection.
+- **Rich node set** — Triggers (manual, webhook, schedule), actions (HTTP, email, Slack, document), control flow (delay, condition, approval), data transform, plus Prompt, AI, Markdown, and Annotation nodes.
+- **Chain AI and actions** — Connect prompts and AI nodes for content, then plug in email, Slack, or HTTP nodes for real-world actions.
+- **Bring your own keys** — Use your API keys for LLMs (Google, OpenAI, Anthropic, xAI) and **Connections** for Gmail/SendGrid and Slack. Everything runs in the browser; keys stay local.
+
+### Export & Integrate
+
+- **Export for n8n** — Export the current workflow as n8n-compatible JSON and paste it into n8n.
+- **Export to clipboard** — Copy the workflow as JSON for backup or custom tooling.
+
+### Experience
+
+- Free and open-source (MIT).
+- Runs entirely in your browser; your data stays private.
+- Dark mode, responsive layout, local persistence.
+- Add nodes via the **Add node** dropdown (top-left), grouped by Triggers, Actions, Control flow, and Data & AI.
+
+---
 
 ## Use Cases
 
-**Email Management**
-- Create email response templates with specific tone and style
-- Just change the input email, get consistent professional responses
+**HR & onboarding**  
+“When a new employee is hired, send a welcome email, add them to Slack, and schedule training.” Describe it once; get a runnable workflow with email, Slack, and delay/approval steps.
 
-**Content Creation**
-- Design once, deploy everywhere: Create social media posts for Twitter, LinkedIn, and Instagram from a single input
-- Maintain brand voice across all platforms
+**Expense & approvals**  
+Multi-step approval flows with human approval nodes, conditions, and notifications.
 
-**Data Processing**
-- Build multi-step analysis workflows
-- Chain data cleaning, analysis, and reporting operations
+**Document processing**  
+Combine AI nodes for extraction or summarization with document and data nodes.
 
-## Quick start
+**Content & productivity**  
+Reusable AI chains: proofread, summarize, translate, or generate social posts from a single prompt. Chain Prompt → AI → Markdown and add HTTP/email/Slack where needed.
 
-**Note:** One for All runs entirely in your browser - no installation required!
+**Compliance & checks**  
+Scheduled or trigger-based workflows with conditions and approval gates.
 
-1. **Create Nodes**: Add prompt, AI, markdown, or annotation nodes to your workflow
-2. **Define Instructions**: Set up your system prompts and parameters
-3. **Connect & Chain**: Link nodes to create complex workflows
-4. **Save & Reuse**: Your templates are ready for any future use
+---
+
+## Quick Start
+
+Runs in the browser—no backend required. Clone, install, and open the app.
+
+```bash
+git clone https://github.com/hatif03/one-for-all.git
+cd one-for-all
+pnpm install
+pnpm dev
+```
+
+Then either:
+
+1. **Create with AI** — In the sidebar, click **Create with AI**. Describe your workflow in plain English, answer a couple of questions if asked, then click **Generate workflow**. Review, run, use **Edit in NL** or **Debug with AI** as needed, and **Approve & deploy** when ready.
+2. **Build from scratch** — Click **New Workflow**, then use **Add node** (top-left) to add triggers, actions, control nodes, or AI/Markdown/Prompt/Annotation. Connect them and run from the trigger or any node.
+
+**Connections** (sidebar) — Add API keys for Gmail/SendGrid and Slack so email and Slack nodes can run. **API Keys** (sidebar) — Add keys for the AI models you use.
+
+---
 
 ## Node Types
 
-Each node has a Run button, when you click on it, it will run the node and send the result to the next connected node.
+| Category      | Nodes | Purpose |
+|---------------|-------|--------|
+| **Triggers**  | Manual, Webhook, Schedule | Start a run manually, via HTTP, or on a schedule. |
+| **Actions**   | HTTP, Email, Slack, Document | Call APIs, send email/Slack, process documents. |
+| **Control**   | Delay, Condition, Approval | Wait, branch on conditions, pause for human approval. |
+| **Data & AI** | Transform, Prompt, AI, Markdown, Annotation | Map data; provide input; run LLM; display output; document. |
 
-- **Prompt Nodes**: It's a text input, you can use it to provide inputs to your AI nodes. Add a label to differentiate between different prompt nodes.
-- **AI Nodes**: Take any inputs like prompt nodes and generate an LLM response based those inputs, the AI model you choose and the system prompt you provide.
-- **Markdown Nodes**: Format and display outputs as Markdown text from any node connected to it.
-- **Annotation Nodes**: Add documentation and guidance to your workflow. (Not runnable)
+Each runnable node has a **Run** button; output flows to connected nodes. Approval nodes show **Approve** / **Reject** when the run is waiting.
+
+---
+
+## Tech Stack
+
+- **Next.js** (App Router), **React**, **TypeScript**
+- **React Flow** — canvas and nodes
+- **Vercel AI SDK** — LLM calls (generateText, streamText) with multiple providers
+- **Zustand** — workflow state, API keys, connections, requirement chat
+- **Tailwind CSS**, **shadcn/ui** — layout and components
+
+---
 
 ## Contributing
 
-- Missing something or found a bug? [Report here](https://github.com/yourusername/one-for-all/issues).
-- Want to contribute? Check out our contribution guide.
-- Have ideas for new features? Let us know in the discussions.
+- Found a bug or have a feature idea? [Open an issue](https://github.com/hatif03/one-for-all/issues).
+- Want to contribute? We welcome PRs and suggestions in discussions.
+
+---
 
 ## Credits
 
-- **Node-based graph**: Powered by [React Flow](https://reactflow.dev/) for smooth visual interactions
-- **Inspiration**: Influenced by [tldraw computer](https://computer.tldraw.com/) with a focus on control and production-ready AI workflows
+- **React Flow** — [reactflow.dev](https://reactflow.dev/)
+- **Vercel AI SDK** — [sdk.vercel.ai](https://sdk.vercel.ai/)
+- **Inspiration** — tldraw computer and low-code workflow tools
+
+---
 
 ## License
 
-Open source MIT and free to use. See LICENSE for details.
+MIT. See [LICENSE](LICENSE) for details.

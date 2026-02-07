@@ -193,7 +193,7 @@ export function AppSidebar() {
             </ConnectionsDialog>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <Link href="https://github.com/yourusername/one-for-all" target="_blank">
+            <Link href="https://github.com/hatif03/one-for-all" target="_blank">
               <SidebarMenuButton>
                 <RiGithubLine className="size-4 shrink-0" />
                 GitHub
