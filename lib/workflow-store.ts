@@ -585,10 +585,21 @@ export const useWorkflowStore = create<WorkflowState>()(
     }),
     {
       name: "workflow-storage",
+      version: 2,
       partialize: (state) => ({
         workflows: state.workflows.map(getCleanedWorkflow),
         currentWorkflowId: state.currentWorkflowId,
       }),
+      migrate: (persistedState, version) => {
+        if (version < 2) {
+          return {
+            ...persistedState,
+            workflows: templates,
+            currentWorkflowId: templates[0].id,
+          };
+        }
+        return persistedState as typeof persistedState;
+      },
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.abortController = new AbortController();
