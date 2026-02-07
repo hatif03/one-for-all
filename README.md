@@ -78,6 +78,18 @@ Scheduled or trigger-based workflows with conditions and approval gates.
 
 ---
 
+## Deploy on Vercel
+
+1. Push the repo to GitHub (or GitLab/Bitbucket).
+2. In [Vercel](https://vercel.com), **Add New** → **Project** and import the repo.
+3. Leave **Framework Preset** as Next.js and **Build Command** as `pnpm run build` (or leave default).
+4. (Optional) Under **Environment Variables**, add `NEXT_PUBLIC_POSTHOG_KEY` if you use PostHog analytics.
+5. Click **Deploy**.
+
+The app runs in the browser; API keys and connections are set in the app and stored locally, so no other env vars are required for core features.
+
+---
+
 ## Quick Start
 
 Runs in the browser—no backend required. Clone, install, and open the app.
