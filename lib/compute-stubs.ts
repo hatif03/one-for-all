@@ -38,10 +38,7 @@ export const computeTriggerManual: ComputeNodeFunction<Record<string, unknown>> 
 export const computeTriggerWebhook: ComputeNodeFunction<Record<string, unknown>> = stubCompute;
 export const computeTriggerSchedule: ComputeNodeFunction<Record<string, unknown>> = stubCompute;
 // action-http is implemented in compute.ts (real fetch)
-export const computeActionEmail: ComputeNodeFunction<Record<string, unknown>> = stubCompute;
-export const computeActionSlack: ComputeNodeFunction<Record<string, unknown>> = stubCompute;
 export const computeActionDocument: ComputeNodeFunction<Record<string, unknown>> = stubCompute;
-export const computeControlDelay: ComputeNodeFunction<Record<string, unknown>> = stubCompute;
 export const computeControlCondition: ComputeNodeFunction<Record<string, unknown>> = stubCompute;
 export const computeControlApproval: ComputeNodeFunction<Record<string, unknown>> = stubCompute;
 export const computeDataTransform: ComputeNodeFunction<Record<string, unknown>> = stubCompute;

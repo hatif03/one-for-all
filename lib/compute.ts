@@ -1,14 +1,16 @@
 import { aiNodeDataSchema, computeAi } from "@/components/nodes/ai-node";
 import { computeMarkdown } from "@/components/nodes/markdown-node";
 import { computePrompt, promptNodeDataSchema } from "@/components/nodes/prompt-node";
-import { computeActionHttp } from "@/lib/compute-actions";
+import {
+  computeActionEmail,
+  computeActionHttp,
+  computeActionSlack,
+  computeControlDelay,
+} from "@/lib/compute-actions";
 import {
   computeActionDocument,
-  computeActionEmail,
-  computeActionSlack,
   computeControlApproval,
   computeControlCondition,
-  computeControlDelay,
   computeDataTransform,
   computeTriggerManual,
   computeTriggerSchedule,

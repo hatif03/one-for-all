@@ -104,6 +104,14 @@ function AddNodeButtonsRaw() {
         <RiAddLine className="size-4 shrink-0" />
         HTTP
       </Button>
+      <Button variant="outline" onClick={() => handleAddNode("action-email")}>
+        <RiAddLine className="size-4 shrink-0" />
+        Email
+      </Button>
+      <Button variant="outline" onClick={() => handleAddNode("action-slack")}>
+        <RiAddLine className="size-4 shrink-0" />
+        Slack
+      </Button>
       <Button variant="outline" onClick={() => handleAddNode("control-delay")}>
         <RiAddLine className="size-4 shrink-0" />
         Delay

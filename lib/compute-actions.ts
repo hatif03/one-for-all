@@ -1,5 +1,7 @@
 import type { ComputeNodeFunction, ComputeNodeInput } from "./compute";
-import { actionHttpDataSchema } from "./node-types";
+import { useConnectionsStore } from "./connections-store";
+import { getOperation } from "./api-catalog";
+import { actionHttpDataSchema, actionEmailDataSchema, actionSlackDataSchema, controlDelayDataSchema } from "./node-types";
 
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 500;
@@ -75,3 +77,99 @@ function tryParseJson(s: string): unknown {
     return s;
   }
 }
+
+export const computeActionEmail: ComputeNodeFunction<Record<string, unknown>> = async (
+  _inputs,
+  data,
+  abortSignal,
+  _nodeId
+) => {
+  const parsed = actionEmailDataSchema.safeParse(data);
+  const config = parsed.success ? parsed.data : { service: "SendGrid", to: "", subject: "", body: "" };
+  const token = useConnectionsStore.getState().getConnection(config.service === "Gmail" ? "Gmail" : "SendGrid");
+  if (!token) {
+    return { ...data, loading: false, error: `Connect ${config.service} in Connections to send email.`, output: undefined };
+  }
+  const op = getOperation(config.service === "Gmail" ? "gmail" : "sendgrid", config.service === "Gmail" ? "gmail-send" : "sendgrid-send");
+  if (!op?.urlTemplate) {
+    return { ...data, loading: false, error: "Email operation not found in catalog.", output: undefined };
+  }
+  try {
+    if (config.service === "SendGrid") {
+      const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          personalizations: [{ to: [{ email: config.to }] }],
+          from: { email: "noreply@workflow.local", name: "Workflow" },
+          subject: config.subject,
+          content: [{ type: "text/plain", value: config.body ?? "" }],
+        }),
+        signal: abortSignal,
+      });
+      if (!res.ok) throw new Error(`SendGrid ${res.status}: ${await res.text()}`);
+      return { ...data, loading: false, error: undefined, output: JSON.stringify({ sent: true, to: config.to }) };
+    }
+    return { ...data, loading: false, error: "Gmail send not implemented; use SendGrid or HTTP node.", output: undefined };
+  } catch (err) {
+    return { ...data, loading: false, error: err instanceof Error ? err.message : String(err), output: undefined };
+  }
+};
+
+export const computeActionSlack: ComputeNodeFunction<Record<string, unknown>> = async (
+  _inputs,
+  data,
+  abortSignal,
+  _nodeId
+) => {
+  const parsed = actionSlackDataSchema.safeParse(data);
+  const config = parsed.success ? parsed.data : { operation: "post_message", channel: "", message: "" };
+  const token = useConnectionsStore.getState().getConnection("Slack");
+  if (!token) {
+    return { ...data, loading: false, error: "Connect Slack in Connections.", output: undefined };
+  }
+  try {
+    if (config.operation === "post_message") {
+      const res = await fetch("https://slack.com/api/chat.postMessage", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ channel: config.channel || "#general", text: config.message ?? "" }),
+        signal: abortSignal,
+      });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error ?? `Slack ${res.status}`);
+      return { ...data, loading: false, error: undefined, output: JSON.stringify(json) };
+    }
+    return { ...data, loading: false, error: "Only post_message is supported.", output: undefined };
+  } catch (err) {
+    return { ...data, loading: false, error: err instanceof Error ? err.message : String(err), output: undefined };
+  }
+};
+
+export const computeControlDelay: ComputeNodeFunction<Record<string, unknown>> = async (
+  inputs,
+  data,
+  abortSignal,
+  _nodeId
+) => {
+  const parsed = controlDelayDataSchema.safeParse(data);
+  const config = parsed.success ? parsed.data : {};
+  const ms = ((config.delayMinutes ?? 0) * 60 + (config.delayHours ?? 0) * 3600) * 1000;
+  if (ms > 0) {
+    await new Promise<void>((resolve, reject) => {
+      const t = setTimeout(resolve, Math.min(ms, 10000));
+      abortSignal?.addEventListener("abort", () => {
+        clearTimeout(t);
+        reject(new Error("Operation was aborted"));
+      });
+    });
+  }
+  const lastInput = inputs.length > 0 ? inputs[inputs.length - 1].output : "{}";
+  return { ...data, loading: false, error: undefined, output: lastInput };
+};

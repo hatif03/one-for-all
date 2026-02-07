@@ -9,7 +9,10 @@ import { useShallow } from "zustand/react/shallow";
 import Logo from "./logo";
 import { AiNode } from "./nodes/ai-node";
 import { AnnotationNode } from "./nodes/annotation-node";
+import { ActionEmailNode } from "./nodes/action-email-node";
 import { ActionHttpNode } from "./nodes/action-http-node";
+import { ActionSlackNode } from "./nodes/action-slack-node";
+import { ControlDelayNode } from "./nodes/control-delay-node";
 import { createGenericBusinessNode } from "./nodes/generic-business-node";
 import { MarkdownNode } from "./nodes/markdown-node";
 import { PromptNode } from "./nodes/prompt-node";
@@ -28,10 +31,10 @@ const nodeTypes: NodeTypes = {
   "trigger-webhook": createGenericBusinessNode("trigger-webhook"),
   "trigger-schedule": createGenericBusinessNode("trigger-schedule"),
   "action-http": ActionHttpNode,
-  "action-email": createGenericBusinessNode("action-email"),
-  "action-slack": createGenericBusinessNode("action-slack"),
+  "action-email": ActionEmailNode,
+  "action-slack": ActionSlackNode,
   "action-document": createGenericBusinessNode("action-document"),
-  "control-delay": createGenericBusinessNode("control-delay"),
+  "control-delay": ControlDelayNode,
   "control-condition": createGenericBusinessNode("control-condition"),
   "control-approval": createGenericBusinessNode("control-approval"),
   "data-transform": createGenericBusinessNode("data-transform"),

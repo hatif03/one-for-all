@@ -17,9 +17,9 @@ import { useWorkflowStore } from "@/lib/workflow-store";
 import {
   RiAddLine,
   RiArrowDownBoxLine,
-  RiComputerLine,
   RiGithubLine,
   RiKeyLine,
+  RiLinkM,
   RiMoonLine,
   RiSunLine,
 } from "@remixicon/react";
@@ -29,6 +29,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import ApiKeys from "./api-keys";
+import ConnectionsDialog from "./connections-dialog";
 import ImportDialog from "./import-dialog";
 import Logo from "./logo";
 
@@ -142,6 +143,14 @@ export function AppSidebar() {
                 API Keys
               </SidebarMenuButton>
             </ApiKeys>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <ConnectionsDialog>
+              <SidebarMenuButton>
+                <RiLinkM className="size-4 shrink-0" />
+                Connections
+              </SidebarMenuButton>
+            </ConnectionsDialog>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <Link href="https://github.com/yourusername/one-for-all" target="_blank">
