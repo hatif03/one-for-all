@@ -29,12 +29,13 @@ export const TriggerManualNode: NodeTypes[keyof NodeTypes] = (props) => {
     [props.id, updateNodeData]
   );
 
+  const datasets = useDatasetsStore((s) => s.datasets);
+
   if (!parsedData.success) {
     return <ErrorNode title="Invalid Trigger Data" description={parsedData.error.message} node={props} />;
   }
 
   const d = parsedData.data;
-  const datasets = useDatasetsStore((s) => s.datasets);
 
   return (
     <NodeCard title="Run by hand" node={props}>

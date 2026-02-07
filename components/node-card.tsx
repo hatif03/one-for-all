@@ -105,14 +105,19 @@ export function NodeCard({
       >
         <div
           className={cn(
-            "flex items-center gap-2 text-sm text-muted-foreground transition-colors",
+            "flex items-center gap-2 text-sm text-muted-foreground transition-colors min-w-0 flex-1",
             node.selected && "text-primary",
             isLoading && "dark:text-white text-foreground",
             error && "text-red-500"
           )}
         >
           {titleIcon}
-          {title}
+          <div className="flex flex-col gap-0 min-w-0">
+            <span className="truncate">{title}</span>
+            {node.data?.label != null && String(node.data.label).trim() !== "" && (
+              <span className="text-xs text-muted-foreground truncate">{String(node.data.label)}</span>
+            )}
+          </div>
         </div>
         {node.data?.dirty && (
           <div

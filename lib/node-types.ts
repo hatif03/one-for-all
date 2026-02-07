@@ -39,22 +39,60 @@ export const actionHttpDataSchema = baseNodeDataSchema.extend({
 });
 export type ActionHttpData = z.infer<typeof actionHttpDataSchema>;
 
+const actionEmailItemSchema = z.object({
+  label: z.string().optional(),
+  to: z.string().optional(),
+  subject: z.string().optional(),
+  body: z.string().optional(),
+});
+export type ActionEmailItem = z.infer<typeof actionEmailItemSchema>;
+
 export const actionEmailDataSchema = baseNodeDataSchema.extend({
   service: z.string().optional(),
+  operation: z.enum(["send", "list", "get"]).optional(),
   to: z.string().optional(),
   subject: z.string().optional(),
   body: z.string().optional(),
   template: z.string().optional(),
   toSource: z.enum(["single", "list"]).optional(),
   toListField: z.string().optional(),
+  query: z.string().optional(),
+  maxResults: z.number().optional(),
+  messageId: z.string().optional(),
+  items: z.array(actionEmailItemSchema).optional(),
 });
 export type ActionEmailData = z.infer<typeof actionEmailDataSchema>;
 
+const actionSlackPostItemSchema = z.object({
+  label: z.string().optional(),
+  channel: z.string().optional(),
+  message: z.string().optional(),
+});
+export type ActionSlackPostItem = z.infer<typeof actionSlackPostItemSchema>;
+
 export const actionSlackDataSchema = baseNodeDataSchema.extend({
-  operation: z.enum(["post_message", "invite_user", "create_channel"]).optional(),
+  operation: z
+    .enum([
+      "post_message",
+      "invite_user",
+      "create_channel",
+      "invite_to_channel",
+      "channel_history",
+      "list_channels",
+      "reaction",
+    ])
+    .optional(),
   channel: z.string().optional(),
   message: z.string().optional(),
   userId: z.string().optional(),
+  email: z.string().optional(),
+  channelName: z.string().optional(),
+  isPrivate: z.boolean().optional(),
+  users: z.string().optional(),
+  limit: z.number().optional(),
+  timestamp: z.string().optional(),
+  reactionName: z.string().optional(),
+  items: z.array(actionSlackPostItemSchema).optional(),
 });
 export type ActionSlackData = z.infer<typeof actionSlackDataSchema>;
 

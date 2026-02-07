@@ -50,8 +50,8 @@ export function RequirementChat({
   }, [input, isLoading, messages, addMessage, setSteps, setLoading]);
 
   return (
-    <div className="flex flex-col h-full min-h-0">
-      <ScrollArea className="flex-1 p-4">
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
+      <ScrollArea className="flex-1 min-h-0 p-4">
         <div className="space-y-4">
           {messages.length === 0 && (
             <>

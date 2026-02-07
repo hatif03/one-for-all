@@ -18,6 +18,12 @@ import { RiAddLine, RiCheckLine, RiKey2Line, RiLinkM, RiDeleteBin2Line } from "@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+const CREDENTIAL_HINTS: Record<string, string> = {
+  Gmail: "Get a token: Google Cloud Console → APIs & Services → Credentials → OAuth 2.0; or use OAuth 2.0 Playground to get an access token for Gmail scopes.",
+  SendGrid: "Get an API key: sendgrid.com → Settings → API Keys → Create API Key (Mail Send permission).",
+  Slack: "Get a bot token: api.slack.com/apps → Create New App → OAuth & Permissions → add chat:write (and others) → Install to Workspace → copy Bot User OAuth Token (xoxb-...).",
+};
+
 export default function ConnectionsDialog({ children }: { children: React.ReactNode }) {
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const [addApiUrl, setAddApiUrl] = useState("");
@@ -157,6 +163,9 @@ export default function ConnectionsDialog({ children }: { children: React.ReactN
                   )}
                 </div>
               </div>
+              {CREDENTIAL_HINTS[key] && (
+                <p className="text-xs text-muted-foreground mt-0.5">{CREDENTIAL_HINTS[key]}</p>
+              )}
               <div className="flex gap-2 mt-2">
                 <Input
                   type="password"

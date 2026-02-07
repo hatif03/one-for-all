@@ -132,14 +132,14 @@ export function AppSidebar() {
                       Create with AI
                     </SidebarMenuButton>
                   </SheetTrigger>
-                  <SheetContent side="right" className="w-full sm:max-w-lg flex flex-col p-0">
-                    <SheetHeader className="p-4 border-b">
+                  <SheetContent side="right" className="w-full sm:max-w-lg flex flex-col p-0 max-h-[100dvh]">
+                    <SheetHeader className="p-4 border-b shrink-0">
                       <SheetTitle className="flex items-center gap-2">
                         <RiChatSmile3Line className="size-5 shrink-0" />
                         Describe your workflow
                       </SheetTitle>
                     </SheetHeader>
-                    <div className="flex-1 min-h-0">
+                    <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
                       <RequirementChat
                         onGenerateWorkflow={async (steps) => {
                           const name = "Generated workflow";

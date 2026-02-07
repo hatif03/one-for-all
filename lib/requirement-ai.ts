@@ -1,9 +1,34 @@
 import { generateText } from "ai";
 import { providers } from "./ai";
 import { useApiKeysStore } from "./api-key-store";
+import { useConnectionsStore } from "./connections-store";
 import { useExamplesStore } from "./examples-store";
 import { useOpenApiStore } from "./openapi-store";
 import type { RequirementStep } from "./requirement-store";
+
+const SLACK_CONTEXT_MAX_CHARS = 500;
+
+/** Fetch Slack channel list when connected; return short summary for system prompt or empty on error. */
+async function getSlackContext(): Promise<string> {
+  const token = useConnectionsStore.getState().getConnection("Slack");
+  if (!token) return "";
+  try {
+    const res = await fetch("https://slack.com/api/conversations.list", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ limit: 30 }),
+    });
+    const json = (await res.json()) as { ok?: boolean; channels?: { name?: string }[] };
+    if (!json.ok || !Array.isArray(json.channels)) return "";
+    const names = json.channels.map((c) => (c.name ? `#${c.name}` : "")).filter(Boolean);
+    const str = names.slice(0, 15).join(", ");
+    if (!str) return "";
+    const line = `\n\nSlack channels available: ${str}. You can reference these in step descriptions when suggesting Slack steps.`;
+    return line.slice(0, SLACK_CONTEXT_MAX_CHARS);
+  } catch {
+    return "";
+  }
+}
 
 const SYSTEM_BASE = `You are a workflow assistant for an AI-powered business workflow builder. The user describes a business process they want to automate. Your job is to decompose it into a rich, multi-step workflow that showcases real automation.
 
@@ -11,8 +36,8 @@ Rules:
 1. If the requirement is clear enough to break into steps, reply with ONLY a valid JSON object (no markdown, no extra text): {"steps":[{"id":"1","description":"...","suggestedService":"..."}, ...]}.
 2. Use short step descriptions (e.g. "Send welcome email", "Add user to Slack", "Wait 24 hours", "If amount > 1000 require approval").
 3. suggestedService must be one of: "email", "slack", "http", "approval", "delay", "document", "webhook", "schedule", "condition", "transform" when it fits. Use them to produce capable workflows:
-   - email: sending emails (welcome, notifications, receipts).
-   - slack: posting to channels, inviting users.
+   - email: sending emails (welcome, notifications, receipts); optionally list or get emails (Gmail).
+   - slack: posting to channels; inviting users to workspace; creating channels; inviting users to a channel; reading channel history (recent messages) for context; listing channels; adding reactions to messages.
    - http: calling APIs (CRM, HR systems, databases), webhooks.
    - approval: human approval gates (expense approval, compliance review, manager sign-off).
    - delay: wait before next step (e.g. "Wait 1 day then send reminder", "Schedule training in 1 week").
@@ -81,9 +106,13 @@ export async function requirementToSteps(
   ];
   const userContent = fullMessages.map((m) => `${m.role}: ${m.content}`).join("\n\n");
 
+  let systemPrompt = getSystemPrompt();
+  const slackContext = await getSlackContext();
+  if (slackContext) systemPrompt += slackContext;
+
   const { text } = await generateText({
     model,
-    system: getSystemPrompt(),
+    system: systemPrompt,
     prompt: userContent,
   });
 

@@ -31,17 +31,15 @@ export const ActionHttpNode: NodeTypes[keyof NodeTypes] = (props) => {
     [props.id, updateNodeData]
   );
 
-  if (!parsedData.success) {
-    return <ErrorNode title="Invalid HTTP Node Data" description={parsedData.error.message} node={props} />;
-  }
-
-  const d = parsedData.data;
-  const catalogEntry = useMemo(() => findHttpOperationById(d.catalogOperationId), [d.catalogOperationId]);
   const mergedCatalog = useMemo(() => getMergedCatalog(), []);
-  const hasBody = d.method !== "GET";
-
+  const catalogEntry = useMemo(
+    () => (parsedData.success ? findHttpOperationById(parsedData.data.catalogOperationId) : null),
+    [parsedData]
+  );
   const handleSelectAction = useCallback(
     (value: string) => {
+      if (!parsedData.success) return;
+      const d = parsedData.data;
       if (value === "__custom__") {
         handleChange({
           catalogServiceId: undefined,
@@ -67,13 +65,24 @@ export const ActionHttpNode: NodeTypes[keyof NodeTypes] = (props) => {
         }
       }
     },
-    [handleChange, mergedCatalog]
+    [parsedData, handleChange, mergedCatalog]
   );
+
+  if (!parsedData.success) {
+    return <ErrorNode title="Invalid HTTP Node Data" description={parsedData.error.message} node={props} />;
+  }
+
+  const d = parsedData.data;
+  const hasBody = d.method !== "GET";
 
   const currentActionValue = d.catalogOperationId ?? "__custom__";
   const displayTitle = catalogEntry ? catalogEntry.operation.name : "HTTP Request";
+  const isCustomHttpOp =
+    catalogEntry?.operation.id === "http-request" ||
+    (catalogEntry && !catalogEntry.operation.urlTemplate && (!catalogEntry.operation.params?.length ?? true));
+  const showCustomRequestForm = !catalogEntry || isCustomHttpOp;
 
-  const content = catalogEntry ? (
+  const content = catalogEntry && !showCustomRequestForm ? (
     <div className="space-y-2">
       {catalogEntry.operation.params.map((p) => (
         <div key={p.key} className="space-y-1">
@@ -139,9 +148,17 @@ export const ActionHttpNode: NodeTypes[keyof NodeTypes] = (props) => {
     </>
   );
 
+  const methodUrlSummary =
+    showCustomRequestForm && d.url?.trim() ? (
+      <p className="text-xs text-muted-foreground font-mono truncate" title={d.url}>
+        {d.method} {d.url}
+      </p>
+    ) : null;
+
   return (
     <NodeCard title={displayTitle} node={props}>
       <div className="p-3 space-y-2 text-sm">
+        {methodUrlSummary}
         <div className="space-y-1">
           <Label className="text-xs text-muted-foreground">Action</Label>
           <Select value={currentActionValue} onValueChange={handleSelectAction}>

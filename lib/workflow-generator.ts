@@ -40,10 +40,51 @@ function stepToNodeData(type: string, step: DiscoveredStep): Record<string, unkn
       return { path: "/webhook", method: "POST" };
     case "trigger-schedule":
       return { cron: "0 9 * * 1-5", description: d || "Weekday 9am" };
-    case "action-email":
-      return { to: "{{to}}", subject: "Notification", body: d, service: "SendGrid" };
-    case "action-slack":
-      return { operation: "post_message", channel: "#general", message: d };
+    case "action-email": {
+      const opId = step.operation?.id ?? "";
+      const pm = step.paramMapping ?? {};
+      if (opId === "gmail-list") {
+        return { operation: "list", query: pm.query ?? "is:unread", maxResults: pm.maxResults ? Number(pm.maxResults) : 50, service: "Gmail" };
+      }
+      if (opId === "gmail-get") {
+        return { operation: "get", messageId: pm.id ?? "{{messageId}}", service: "Gmail" };
+      }
+      return {
+        operation: "send",
+        to: pm.to ?? "{{to}}",
+        subject: pm.subject ?? "Notification",
+        body: pm.body ?? d,
+        service: opId.includes("gmail") ? "Gmail" : "SendGrid",
+      };
+    }
+    case "action-slack": {
+      const opId = step.operation?.id ?? "";
+      const pm = step.paramMapping ?? {};
+      if (opId === "slack-invite") {
+        return { operation: "invite_user", email: pm.email ?? "{{email}}" };
+      }
+      if (opId === "slack-create-channel") {
+        return { operation: "create_channel", channelName: pm.name ?? "{{channelName}}", isPrivate: false };
+      }
+      if (opId === "slack-invite-to-channel") {
+        return { operation: "invite_to_channel", channel: pm.channel ?? "{{channel}}", users: pm.users ?? "{{users}}" };
+      }
+      if (opId === "slack-channel-history") {
+        return { operation: "channel_history", channel: pm.channel ?? "{{channel}}", limit: pm.limit ? Number(pm.limit) : 10 };
+      }
+      if (opId === "slack-list-channels") {
+        return { operation: "list_channels", limit: pm.limit ? Number(pm.limit) : 50 };
+      }
+      if (opId === "slack-reaction") {
+        return {
+          operation: "reaction",
+          channel: pm.channel ?? "{{channel}}",
+          timestamp: pm.timestamp ?? "{{timestamp}}",
+          reactionName: pm.name ?? "thumbsup",
+        };
+      }
+      return { operation: "post_message", channel: pm.channel ?? "#general", message: pm.text ?? d };
+    }
     case "action-document":
       return { format: "pdf", extractFields: "" };
     case "control-condition":
@@ -69,6 +110,68 @@ function stepToNodeData(type: string, step: DiscoveredStep): Record<string, unkn
   }
 }
 
+function isMergeableEmailSend(step: DiscoveredStep, type: string): boolean {
+  if (type !== "action-email") return false;
+  const opId = step.operation?.id ?? "";
+  return opId !== "gmail-list" && opId !== "gmail-get";
+}
+
+function isMergeableSlackPost(step: DiscoveredStep, type: string): boolean {
+  if (type !== "action-slack") return false;
+  const opId = step.operation?.id ?? "";
+  const nonPost = [
+    "slack-invite",
+    "slack-create-channel",
+    "slack-invite-to-channel",
+    "slack-channel-history",
+    "slack-list-channels",
+    "slack-reaction",
+  ];
+  return !nonPost.includes(opId);
+}
+
+type StepGroup = { type: string; steps: DiscoveredStep[] };
+
+function buildStepGroups(discovered: DiscoveredStep[], startIndex: number): StepGroup[] {
+  const groups: StepGroup[] = [];
+  let i = startIndex;
+  while (i < discovered.length) {
+    const step = discovered[i];
+    const type = stepToNodeType(step, i, false);
+    if (isMergeableEmailSend(step, type)) {
+      const steps: DiscoveredStep[] = [step];
+      i++;
+      while (i < discovered.length) {
+        const next = discovered[i];
+        const nextType = stepToNodeType(next, i, false);
+        if (isMergeableEmailSend(next, nextType)) {
+          steps.push(next);
+          i++;
+        } else break;
+      }
+      groups.push({ type: "action-email", steps });
+      continue;
+    }
+    if (isMergeableSlackPost(step, type)) {
+      const steps: DiscoveredStep[] = [step];
+      i++;
+      while (i < discovered.length) {
+        const next = discovered[i];
+        const nextType = stepToNodeType(next, i, false);
+        if (isMergeableSlackPost(next, nextType)) {
+          steps.push(next);
+          i++;
+        } else break;
+      }
+      groups.push({ type: "action-slack", steps });
+      continue;
+    }
+    groups.push({ type, steps: [step] });
+    i++;
+  }
+  return groups;
+}
+
 export async function generateWorkflowFromSteps(
   steps: RequirementStep[],
   workflowName: string
@@ -87,6 +190,9 @@ export async function generateWorkflowFromSteps(
   let triggerId: string;
   let startIndex: number;
 
+  const shortLabel = (text: string, max = 50) =>
+    (text?.length ?? 0) <= max ? text ?? "" : (text ?? "").slice(0, max - 3) + "...";
+
   if (useAltTrigger && first) {
     const triggerType = stepToNodeType(first, 0, true);
     triggerId = nanoid();
@@ -94,7 +200,7 @@ export async function generateWorkflowFromSteps(
       id: triggerId,
       type: triggerType,
       position: { x: 0, y: 0 },
-      data: stepToNodeData(triggerType, first),
+      data: { ...stepToNodeData(triggerType, first), label: shortLabel(first.description) },
       width: NODE_WIDTH,
       height: 120,
     });
@@ -115,18 +221,48 @@ export async function generateWorkflowFromSteps(
   let prevId = triggerId;
   let y = 0;
 
-  for (let i = startIndex; i < discovered.length; i++) {
-    const step = discovered[i];
-    const type = stepToNodeType(step, i, false);
+  const groups = buildStepGroups(discovered, startIndex);
+  for (const group of groups) {
+    const { type, steps } = group;
+    const step = steps[0];
     const nodeId = nanoid();
-    const data = stepToNodeData(type, step);
+    let data: Record<string, unknown>;
+    if (steps.length === 1) {
+      data = { ...stepToNodeData(type, step), label: shortLabel(step.description) };
+    } else if (type === "action-email") {
+      const firstData = stepToNodeData(type, step) as Record<string, unknown>;
+      data = {
+        operation: "send",
+        service: firstData.service ?? "SendGrid",
+        items: steps.map((s) => ({
+          label: shortLabel(s.description),
+          to: "{{to}}",
+          subject: "Notification",
+          body: s.description ?? "",
+        })),
+        label: steps.length > 1 ? `${steps.length} emails` : shortLabel(step.description),
+      };
+    } else if (type === "action-slack") {
+      data = {
+        operation: "post_message",
+        items: steps.map((s) => ({
+          label: shortLabel(s.description),
+          channel: "#general",
+          message: s.description ?? "",
+        })),
+        label: steps.length > 1 ? `${steps.length} messages` : shortLabel(step.description),
+      };
+    } else {
+      data = { ...stepToNodeData(type, step), label: shortLabel(step.description) };
+    }
+    const height = type.startsWith("control-") ? 180 : NODE_HEIGHT;
     nodes.push({
       id: nodeId,
       type,
       position: { x: 0, y: y + GAP_Y },
-      data: { ...data },
+      data,
       width: NODE_WIDTH,
-      height: type.startsWith("control-") ? 180 : NODE_HEIGHT,
+      height,
     });
     edges.push({
       id: nanoid(),
@@ -134,7 +270,7 @@ export async function generateWorkflowFromSteps(
       target: nodeId,
     });
     prevId = nodeId;
-    y += GAP_Y + (type.startsWith("control-") ? 180 : NODE_HEIGHT);
+    y += GAP_Y + height;
   }
 
   // Add annotation summarizing the workflow (showcases annotation node)
