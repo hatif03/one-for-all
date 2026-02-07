@@ -141,10 +141,10 @@ export function AppSidebar() {
                     </SheetHeader>
                     <div className="flex-1 min-h-0">
                       <RequirementChat
-                        onGenerateWorkflow={(steps) => {
+                        onGenerateWorkflow={async (steps) => {
                           const name = "Generated workflow";
                           const id = createWorkflow(name);
-                          const { nodes, edges } = generateWorkflowFromSteps(steps, name);
+                          const { nodes, edges } = await generateWorkflowFromSteps(steps, name);
                           setWorkflowContent(id, nodes, edges);
                           setWorkflowMetadata(id, { source: "ai-generated", approved: false });
                           switchWorkflow(id);

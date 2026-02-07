@@ -69,11 +69,11 @@ function stepToNodeData(type: string, step: DiscoveredStep): Record<string, unkn
   }
 }
 
-export function generateWorkflowFromSteps(
+export async function generateWorkflowFromSteps(
   steps: RequirementStep[],
   workflowName: string
-): { nodes: Node[]; edges: Edge[] } {
-  const discovered = discoverOperations(steps);
+): Promise<{ nodes: Node[]; edges: Edge[] }> {
+  const discovered = await discoverOperations(steps);
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 

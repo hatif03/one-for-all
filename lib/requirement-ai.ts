@@ -2,6 +2,7 @@ import { generateText } from "ai";
 import { providers } from "./ai";
 import { useApiKeysStore } from "./api-key-store";
 import { useExamplesStore } from "./examples-store";
+import { useOpenApiStore } from "./openapi-store";
 import type { RequirementStep } from "./requirement-store";
 
 const SYSTEM_BASE = `You are a workflow assistant for an AI-powered business workflow builder. The user describes a business process they want to automate. Your job is to decompose it into a rich, multi-step workflow that showcases real automation.
@@ -25,10 +26,18 @@ Rules:
 6. Keep all responses concise.`;
 
 function getSystemPrompt(): string {
+  let base = SYSTEM_BASE;
+  const openApiServices = useOpenApiStore.getState().getServices();
+  if (openApiServices.length > 0) {
+    const apiList = openApiServices
+      .map((s) => `${s.name}: ${s.operations.map((o) => o.name).join(", ")}`)
+      .join("; ");
+    base += `\n\nAvailable custom APIs: ${apiList}. Prefer suggestedService "http" and step descriptions that match these operations (e.g. "place order" -> Place order).`;
+  }
   const examples = useExamplesStore.getState().getExamples();
-  if (examples.length === 0) return SYSTEM_BASE;
+  if (examples.length === 0) return base;
   const ex = examples[0];
-  return `${SYSTEM_BASE}
+  return `${base}
 
 Example of a good decomposition:
 User: "${ex.requirement.slice(0, 200)}..."
